@@ -97,5 +97,21 @@ public class Bank {
             }
         }
     }
+    public String getName() {
+        return name;
+    }
+
+    public void printAllClients() {
+        if (clients.isEmpty()) {
+            System.out.println("В банке нет клиентов.");
+            return;
+        }
+        for (Client c : clients) {
+            System.out.println(c.getFirstName() + " " + c.getSecondName() +
+                    " | Уровень: " + c.getLevel() +
+                    " | Счёт: " + c.getNumberAccount() +
+                    " | Баланс: " + c.getAccount().getSum());
+        }
+    }
 
 }

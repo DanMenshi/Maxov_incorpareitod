@@ -40,29 +40,27 @@ public class Account {
             System.out.println("На балансе недостаточно средств");
         }
         else {
-            if (HaveBonus()) {
+            if (hasBonus()) {
                 plus(1000);
             }
             sum -= sum_;
             operations.add(sum_ * -1);
         }
     }
-    public boolean HaveBonus() {
-        boolean a = false;
+    public boolean hasBonus() {
         for (int el : operations) {
-            if (el < 0) {
-                a = true;
-            }
+            if (el < 0) return false; // если хоть одно снятие — бонуса нет
         }
-        return !a;
+        return true;
     }
+
 
     public void discount(int sum_, TypeLevel level) {
         if (level == TypeLevel.BASE && sum_ >= 10000) plus(sum_ / 100);
-        if (level == TypeLevel.PREMIUM && sum_ >= 10000) plus(sum_ / 100 * 5);
-        if (level == TypeLevel.VIP && sum_ < 10000) plus(sum_ / 100);
-        if (level == TypeLevel.VIP && sum_ >= 10000) plus(sum_ / 100 * 5);
-        if (level == TypeLevel.VIP && sum_ >= 100000) plus(sum_ / 100 * 10);
+        else if (level == TypeLevel.PREMIUM && sum_ >= 10000) plus(sum_ / 100 * 5);
+        else if (level == TypeLevel.VIP && sum_ < 10000) plus(sum_ / 100);
+        else if (level == TypeLevel.VIP && sum_ < 100000) plus(sum_ / 100 * 5);
+        else if (level == TypeLevel.VIP) plus(sum_ / 100 * 10);
     }
 
     public String getAccountNumber() {
