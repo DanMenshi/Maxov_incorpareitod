@@ -3,6 +3,7 @@ package Bank_task;
 import Bank_task.enums.TypeLevel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AccountNumber {
     private final String accountNumber;
@@ -40,7 +41,25 @@ public class AccountNumber {
         }
     }
 
+    public boolean haveInRegistry() {
+        for(String accountNumber1 : list) {
+            if (accountNumber1.equals(accountNumber)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getAccountNumber() {
         return accountNumber;
+    }
+
+    public String getPrintAccountNumber() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < accountNumber.length(); ++i) {
+            sb.append(accountNumber.charAt(i));
+            if (i == 3 || i == 7 || i == 11 || i == 15) sb.append(" ");
+        }
+        return sb.toString();
     }
 }
