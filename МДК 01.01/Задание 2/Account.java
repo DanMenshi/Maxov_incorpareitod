@@ -1,79 +1,93 @@
 package Bank_task;
 
 import Bank_task.enums.TypeLevel;
+import Bank_task.enums.TypeNameTransfer;
 
 import java.util.ArrayList;
 
 public class Account {
-    private String accountNumber;
+    private final Client client;
+    private final AccountNumber account;
     private int sum;
-    private ArrayList<Integer> operations;
+    private final ArrayList<Operation> operations;
 
-    private String generateAccNumber() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 4; ++i) {
-            sb.append((int) (Math.random() * (9999 - 1000 + 1)) + 1000);
-        }
-        return sb.toString();
-    }
-
-    public Account() {
-        this.accountNumber = generateAccNumber();
+    public Account(Client client) {
+        this.client = client;
         this.sum = 0;
-        this.operations = new ArrayList<Integer>();
+        account = new AccountNumber(this.client);
+        operations = new ArrayList<Operation>();
     }
 
-    public void plus(int sum_) {
-        if (sum_ <= 0) {
-            System.out.println("Нельзя положить на счет сумм равную или меньше нуля");
-        } else {
-            operations.add(sum_);
-            sum += sum_;
+    public void sum(int _sum) {
+        sum += _sum;
+    }
+    public void minus(int _sum) {
+        sum -= _sum;
+    }
+    public boolean haveBonus() {
+        for(Operation op : operations) {
+           if (op.getName() == TypeNameTransfer.WELCOME_BONUS) {
+               return true;
+           }
         }
+        return false;
+    }
+    public boolean willCashBack(int sum_) {
+        return sum_ >= 10000 || client.getLevel() == TypeLevel.VIP;
+    }
+    public int calculationCashBack(int sum_) {
+        if (sum_ >= 10000 && getClient().getLevel() == TypeLevel.BASE) return sum_/100;
+        if (sum_ >= 10000 && getClient().getLevel() == TypeLevel.PREMIUM) return  sum_/100*5;
+        if (getClient().getLevel() == TypeLevel.VIP) {
+            if (sum_ < 10000) return sum_/100;
+            else if (sum_ >= 100000) return sum_/100*10;
+            else return  sum_/100*5;
+        }
+        return -1;
+    }
+    public boolean enoughMoney(int sum_) {
+        return sum - sum_ >= 0;
+    }
+    public AccountNumber getAccount() {
+        return account;
     }
 
-    public void minus(int sum_) {
-        if (sum_ <= 0) {
-            System.out.println("Нельзя снять с счёта сумму равную или меньше нуля");
-        }
-        else if ((sum - sum_) < 0) {
-            System.out.println("На балансе недостаточно средств");
-        }
-        else {
-            if (hasBonus()) {
-                plus(1000);
-            }
-            sum -= sum_;
-            operations.add(sum_ * -1);
-        }
-    }
-    public boolean hasBonus() {
-        for (int el : operations) {
-            if (el < 0) return false; // если хоть одно снятие — бонуса нет
-        }
-        return true;
+    public ArrayList<Operation> getOperations() {
+        return operations;
     }
 
-
-    public void discount(int sum_, TypeLevel level) {
-        if (level == TypeLevel.BASE && sum_ >= 10000) plus(sum_ / 100);
-        else if (level == TypeLevel.PREMIUM && sum_ >= 10000) plus(sum_ / 100 * 5);
-        else if (level == TypeLevel.VIP && sum_ < 10000) plus(sum_ / 100);
-        else if (level == TypeLevel.VIP && sum_ < 100000) plus(sum_ / 100 * 5);
-        else if (level == TypeLevel.VIP) plus(sum_ / 100 * 10);
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
+    public Client getClient() {
+        return client;
     }
 
     public int getSum() {
         return sum;
     }
 
-    public ArrayList<Integer> getOperations() {
-        return operations;
+    @Override
+    public String toString() {
+        return "Клиент: " + getClient().getFirstName() + " " + getClient().getSecondName() + ", баланс = " + sum + ", номер счета = [ " + account.getPrintAccountNumber() + " ].";
     }
 
+    public void printClient() {
+        System.out.println("=== " + client.getFirstName() + " " + client.getSecondName() + " ===" +
+                "\nНомер счёта: [ " + account.getPrintAccountNumber() + " ]." +
+                "\nДенег на счету: " + sum +
+                "\n=== История счёта ===");
+        if (operations.isEmpty()) System.out.println("\tПусто...");
+        else {
+            int index = operations.size();
+            for (;index != 0;) {
+                Operation op = operations.get(index - 1);
+                System.out.print("\n" + index + ". " + "\tтип операции: " + op.getName().getS() +
+                        "   \n\tдата операции: " + op.getDateTime() +
+                        "   \n\t\tсумма: " + op.getSum());
+                if (op.isThisTransfer()) {
+                    System.out.print("   \n\tотправитель: [ " + op.getSender().getPrintAccountNumber() + " ].\n");
+                } else System.out.print(".\n");
+                --index;
+            }
+        }
+    }
 }
 

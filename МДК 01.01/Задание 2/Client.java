@@ -6,14 +6,11 @@ public class Client {
     private String firstName;
     private String secondName;
     private TypeLevel level;
-    private Account account;
 
-
-    public Client(String firstName, String secondName, TypeLevel level, Account account) {
+    public Client(String firstName, String secondName, TypeLevel level) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.level = level;
-        this.account = account;
     }
 
     public String getFirstName() {
@@ -27,10 +24,4 @@ public class Client {
     public TypeLevel getLevel() {
         return level;
     }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public String getNumberAccount() { return account.getAccountNumber(); }
 }

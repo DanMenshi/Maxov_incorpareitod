@@ -1,159 +1,135 @@
 package Bank_task;
 
 import Bank_task.enums.TypeLevel;
-
 import java.util.Scanner;
 
 public class App {
-    public static void main(String[] args) {
 
+
+
+    public void start() {
         Scanner sc = new Scanner(System.in);
-        Bank bank = new Bank("TBank");
-        for (int i = 1; i < 6; i++) bank.add(new Client("Base" + i, "User", TypeLevel.BASE, new Account()));
-        for (int i = 1; i < 6; i++) bank.add(new Client("Premium" + i, "User", TypeLevel.PREMIUM, new Account()));
-        for (int i = 1; i < 6; i++) bank.add(new Client("Vip" + i, "User", TypeLevel.VIP, new Account()));
-        Client danya = new Client("Даня", "Меньшиков", TypeLevel.PREMIUM, new Account());
-        bank.add(danya);
+        Bank bank = new Bank("СберБанк");
 
-        System.out.println("=== Добро пожаловать в " + bank.getName() + " ===");
-        System.out.println("1. Продолжить как клиент");
-        System.out.println("2. Продолжить как банк (режим тестирования)");
-        System.out.print("Выберите режим: ");
+        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Base" + i, "User", TypeLevel.BASE)));
+        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Premium" + i, "User", TypeLevel.PREMIUM)));
+        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Vip" + i, "User", TypeLevel.VIP)));
+        Account danya = new Account(new Client("Даня", "Меньшиков", TypeLevel.BASE));
+        Account igor = new Account(new Client("Игорь", "Бабич", TypeLevel.BASE));
 
-        int mode = sc.nextInt();
-        sc.nextLine(); // очистка буфера
+        bank.addAccount(danya);
+        bank.addAccount(igor);
+        bank.putMoney(danya, 100000);
+        bank.sendMoney(danya, 20000);
+        bank.transferMoney(danya, igor, 10000);
 
-        if (mode == 1) {
-            runClientCreation(bank, sc);
-        } else if (mode == 2) {
-            runBankTestMode(bank, sc);
-        } else {
-            System.out.println("Неверный выбор.");
-        }
+        while (true) {
+            System.out.print("=== " + "Добро пожаловать в " + bank.getName() + " ===" +
+                    "\n1. Режим банка (тесты клиентов)." +
+                    "\n2. Режим клиента (обычная работа)." +
+                    "\nВыберете режим работы: ");
 
-        sc.close();
-    }
-
-    private static void runClientCreation(Bank bank, Scanner sc) {
-        System.out.println("\n=== Создание нового клиента ===");
-        System.out.print("Имя: ");
-        String first = sc.nextLine();
-        System.out.print("Фамилия: ");
-        String last = sc.nextLine();
-        System.out.print("Уровень (BASE / PREMIUM / VIP): ");
-        String lvlStr = sc.nextLine().toUpperCase();
-
-        TypeLevel level;
-        try {
-            level = TypeLevel.valueOf(lvlStr);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Неверный уровень. Установлен BASE.");
-            level = TypeLevel.BASE;
-        }
-
-        Client client = new Client(first, last, level, new Account());
-        bank.add(client);
-
-        System.out.println("\n✅ Клиент создан!");
-        System.out.println("Имя: " + first + " " + last);
-        System.out.println("Уровень: " + level);
-        System.out.println("Номер счёта: " + client.getNumberAccount());
-        System.out.println();
-
-        runClientMode(bank, sc, client.getNumberAccount());
-    }
-
-    private static void runClientMode(Bank bank, Scanner sc, String acc) {
-        boolean exit = false;
-        while (!exit) {
-            System.out.println("\n=== Меню клиента ===");
-            System.out.println("1. Пополнить счёт");
-            System.out.println("2. Снять со счёта");
-            System.out.println("3. Перевести другому клиенту");
-            System.out.println("4. Показать информацию по счёту");
-            System.out.println("0. Выйти");
-            System.out.print("Ваш выбор: ");
-
-            int action = sc.nextInt();
-            sc.nextLine();
-
-            switch (action) {
-                case 1 -> {
-                    System.out.print("Введите сумму для пополнения: ");
-                    int sum = sc.nextInt();
-                    bank.plusSum(sum, acc);
-                }
-                case 2 -> {
-                    System.out.print("Введите сумму для снятия: ");
-                    int sum = sc.nextInt();
-                    bank.minusSum(sum, acc);
-                }
-                case 3 -> {
-                    System.out.print("Введите сумму перевода: ");
-                    int sum = sc.nextInt();
-                    sc.nextLine();
-                    System.out.print("Введите номер счёта получателя: ");
-                    String acc2 = sc.nextLine();
-                    bank.transferP2P(acc, sum, acc2);
-                }
-                case 4 -> bank.printClient(acc);
-                case 0 -> {
-                    System.out.println("Выход...");
-                    exit = true;
-                }
-                default -> System.out.println("Некорректный выбор.");
+            int choice = sc.nextInt();
+            if (choice == 1) {
+                System.out.print("\033[H\033[2J"); System.out.flush();
+                bankMod(bank, sc);
+                break;
             }
-        }
-    }
+            if (choice == 2) {
+                System.out.print("\033[H\033[2J"); System.out.flush();
+                clientMod(bank, sc);
+                break;
+            }
+            else {
+                System.out.print("\033[H\033[2J"); System.out.flush();
+            }
 
-    private static void runBankTestMode(Bank bank, Scanner sc) {
+            sc.close();
+        }
+
+    }
+    public void bankMod(Bank bank, Scanner sc) {
         boolean exit = false;
         while (!exit) {
-            System.out.println("\n=== Меню банка ===");
-            System.out.println("1. Добавить клиента");
-            System.out.println("2. Показать всех клиентов");
-            System.out.println("3. Найти клиента по счёту");
-            System.out.println("0. Выйти");
-            System.out.print("Ваш выбор: ");
-
+            System.out.print("\n\n=== Меню " + bank.getName() + " ===" +
+                    "\n1. Добавить клиента." +
+                    "\n2. Показать всех клиентов." +
+                    "\n3. Найти клиента по счёту." +
+                    "\n0. Выйти." +
+                    "\nВаш выбор: ");
             int action = sc.nextInt();
             sc.nextLine();
 
             switch (action) {
-                case 1 -> {
+                case 1: {
+                    Account account;
                     System.out.print("Имя: ");
-                    String first = sc.nextLine();
+                    String firstName = sc.nextLine();
                     System.out.print("Фамилия: ");
-                    String last = sc.nextLine();
-                    System.out.print("Уровень (BASE / PREMIUM / VIP): ");
-                    String lvlStr = sc.nextLine().toUpperCase();
-                    TypeLevel level;
-                    try {
-                        level = TypeLevel.valueOf(lvlStr);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Неверный уровень. Установлен BASE.");
-                        level = TypeLevel.BASE;
+                    String secondName = sc.nextLine();
+                    System.out.print("Уровень (1.BASE/ 2.PREMIUM/ 3.VIP/ ): ");
+                    String level = sc.nextLine();
+                    if (level.equals("1")) {
+                        account = new Account(new Client(firstName, secondName, TypeLevel.BASE));
                     }
-
-                    Client newClient = new Client(first, last, level, new Account());
-                    bank.add(newClient);
-                    System.out.println("✅ Клиент добавлен. Номер счёта: " + newClient.getNumberAccount());
+                    if (level.equals("2")) {
+                        account = new Account(new Client(firstName, secondName, TypeLevel.PREMIUM));
+                    }
+                    if (level.equals("3")) {
+                        account = new Account(new Client(firstName, secondName, TypeLevel.VIP));
+                    }
+                    else {
+                        System.out.println("Не верно указан уровень. Установлен BASE.");
+                        account = new Account(new Client(firstName, secondName, TypeLevel.BASE));
+                    }
+                    bank.addAccount(account);
+                    System.out.println("Клиент добавлен. Его номер счета: [ " + account.getAccount().getPrintAccountNumber() + " ].");
+                    break;
                 }
-                case 2 -> {
-                    System.out.println("=== Все клиенты ===");
-                    bank.printAllClients();
+                case 2: {
+                    int index = 1;
+                    for (Account acc : bank.getAccounts()) {
+                        System.out.println(index + ". " + acc.toString());
+                        ++index;
+                    }
+                    System.out.print("\nХотите узнать подробно о отдельном пользователе? (1.да/2.нет)\nУкажите: ");
+                    String choice = sc.nextLine();
+                    if (choice.equals("1")) {
+                        System.out.print("Укажите индекс клиента: ");
+                        int choiceIndex = sc.nextInt();
+                        if (0 < choiceIndex && choiceIndex < index) {
+                            index = 1;
+                            for(Account acc : bank.getAccounts()) {
+                                if (index == choiceIndex) {
+                                    acc.printClient();
+                                }
+                                ++index;
+                            }
+                        }
+                        sc.nextLine();
+                    }
+                    break;
                 }
-                case 3 -> {
-                    System.out.print("Введите номер счёта: ");
-                    String acc = sc.nextLine();
-                    bank.printClient(acc);
+                case 3: {
+                    System.out.print("Введите счёт клиента (без пробелов): ");
+                    String accountNumber = sc.nextLine();
+                    if(bank.inAccount(accountNumber)) {
+                        System.out.println();
+                        bank.getInAccount(accountNumber).printClient();
+                    } else {
+                        System.out.println("Такого счёта не найдена в нашем банке!");
+                    }
+                    break;
                 }
-                case 0 -> {
+                case 0: {
                     System.out.println("Выход...");
                     exit = true;
                 }
-                default -> System.out.println("Некорректный выбор.");
+
             }
         }
+    }
+    public void clientMod(Bank bank, Scanner sc) {
+
     }
 }
