@@ -3,6 +3,7 @@ package fitness;
 import fitness.enums.FitnessZone;
 import fitness.enums.TypeSubscription;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Subscription {
@@ -15,6 +16,8 @@ public class Subscription {
     LocalTime beginTime;
     LocalTime endTime;
 
+    LocalDate registrationDate;
+    LocalDate expireDate;
 
     public Subscription(TypeSubscription abon) {
         this.abon = abon;
@@ -44,6 +47,13 @@ public class Subscription {
         }
 
     }
+
+    public Subscription(TypeSubscription abon, LocalDate regDate, LocalDate expDate) {
+        this(abon); // Вызываем старый конструктор для настройки времени (часов)
+        this.registrationDate = regDate;
+        this.expireDate = expDate;
+    }
+
 
     public TypeSubscription getAbon() {
         return abon;
