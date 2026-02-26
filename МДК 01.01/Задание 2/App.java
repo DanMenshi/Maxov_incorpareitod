@@ -1,28 +1,32 @@
 package Bank_task;
 
 import Bank_task.enums.TypeLevel;
+
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class App {
+    DatabaseManager db = new DatabaseManager();
 
 
-
-    public void start() {
+    public void start() throws SQLException {
         Scanner sc = new Scanner(System.in);
         Bank bank = new Bank("СберБанк");
+        System.out.println(db.getConnection());
 
-        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Base" + i, "User", TypeLevel.BASE)));
-        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Premium" + i, "User", TypeLevel.PREMIUM)));
-        for (int i = 1; i < 6; i++) bank.addAccount(new Account(new Client("Vip" + i, "User", TypeLevel.VIP)));
-        Account danya = new Account(new Client("Даня", "Меньшиков", TypeLevel.BASE));
-        Account igor = new Account(new Client("Игорь", "Бабич", TypeLevel.BASE));
+        db.updateBalance("10443262240232016205", 200);
 
-        bank.addAccount(danya);
-        bank.addAccount(igor);
-        bank.putMoney(danya, 100000);
-        bank.sendMoney(danya, 20000);
-        bank.transferMoney(danya, igor, 10000);
+        db.transferMoneyDB("10443262240232016205", "10489394137854304330", 200);
 
+        db.deleteAccount("86285296817522979192");
+
+
+
+        if (!bank.getAccounts().isEmpty()) {
+            db.migrateAccounts(bank);
+        } else {
+            bank.migrateAccounts(db.getAllAccountsFromDB());
+        }
         while (true) {
             System.out.print("=== " + "Добро пожаловать в " + bank.getName() + " ===" +
                     "\n1. Режим банка (тесты клиентов)." +

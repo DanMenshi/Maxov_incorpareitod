@@ -18,6 +18,13 @@ public class Account {
         operations = new ArrayList<Operation>();
     }
 
+    public Account(Client client, int balance, String accountNumberFromDb, boolean hasBonus) {
+        this.client = client;
+        this.sum = balance;
+        this.account = new AccountNumber(accountNumberFromDb);
+        this.operations = new ArrayList<>();
+    }
+
     public void sum(int _sum) {
         sum += _sum;
     }

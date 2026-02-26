@@ -1,9 +1,6 @@
 package Bank_task;
 
-import Bank_task.enums.TypeLevel;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class AccountNumber {
     private final String accountNumber;
@@ -11,6 +8,9 @@ public class AccountNumber {
 
     public AccountNumber(Client clientName) {
         this.accountNumber = generateAccNumber(clientName);
+    }
+    public AccountNumber(String existingNumber) {
+        this.accountNumber = existingNumber;
     }
 
     private String generateAccNumber(Client clientName) {

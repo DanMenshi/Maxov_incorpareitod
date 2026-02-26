@@ -3,6 +3,7 @@ package Bank_task;
 import Bank_task.enums.TypeNameTransfer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Bank {
     private String name;
@@ -83,6 +84,15 @@ public class Bank {
             }
         }
         return null;
+    }
+
+    public void migrateAccounts(List<Account> accountsFromDb) {
+        int count = 0;
+        for (Account i : accountsFromDb) {
+            addAccount(i);
+            ++count;
+        }
+        System.out.println("Успешно добавлено " + count + " аккаунтов из БД.");
     }
 
     public String getName() {
