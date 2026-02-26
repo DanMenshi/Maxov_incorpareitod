@@ -1,42 +1,39 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class MainMenu extends JFrame {
 
     public MainMenu() {
-        // Настройка окна
-        setTitle("Главное меню");
-        setSize(300, 200);
+        setTitle("Корпорация Maxov Inc.");
+        setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // По центру экрана
-        setLayout(new GridLayout(2, 1, 10, 10)); // Сетка: 2 строки, 1 столбец
+        setLayout(new GridLayout(3, 1, 10, 10));
 
-        // Кнопки
-        JButton bankButton = new JButton("Открыть БАНК");
-        JButton fitnessButton = new JButton("Открыть ФИТНЕС");
+        JLabel title = new JLabel("Система управления", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        add(title);
 
-        // Добавляем кнопки в окно
-        add(bankButton);
-        add(fitnessButton);
-
-        // Логика нажатия на "Банк"
-        bankButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new BankWindow().setVisible(true); // Открываем окно банка
-            }
+        JButton bankBtn = new JButton("Открыть Банк");
+        bankBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+        bankBtn.addActionListener(e -> {
+            new BankWindow().setVisible(true);
         });
+        add(bankBtn);
 
-        // Логика нажатия на "Фитнес" (сделайте по аналогии позже)
-        fitnessButton.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Фитнес пока в разработке!");
+        JButton fitnessBtn = new JButton("Открыть Фитнес");
+        fitnessBtn.setFont(new Font("Arial", Font.PLAIN, 16));
+        fitnessBtn.addActionListener(e -> {
+            new FitnessWindow().setVisible(true);
         });
+        add(fitnessBtn);
     }
 
     public static void main(String[] args) {
-        // Запуск приложения
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {}
+
         SwingUtilities.invokeLater(() -> new MainMenu().setVisible(true));
     }
 }

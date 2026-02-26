@@ -1,5 +1,7 @@
 import Bank_task.Account;
+import Bank_task.Client;
 import Bank_task.DatabaseManager;
+import Bank_task.enums.TypeLevel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -7,87 +9,88 @@ import java.awt.*;
 import java.util.List;
 
 public class BankWindow extends JFrame {
-    private DatabaseManager dbManager;
-    private JTable table;
-    private DefaultTableModel tableModel;
+    private final DatabaseManager db = new DatabaseManager();
+    private final DefaultTableModel model;
+    private final JTable table;
 
     public BankWindow() {
-        dbManager = new DatabaseManager(); // Подключаемся к БД
-
-        setTitle("Система управления Банком");
-        setSize(800, 500);
+        setTitle("Банковская система");
+        setSize(900, 600);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Закрыть только это окно
 
-        // --- 1. ТАБЛИЦА (Центр) ---
-        // Заголовки столбцов
-        String[] columns = {"Номер счета", "Имя", "Фамилия", "Баланс", "Статус"};
-        tableModel = new DefaultTableModel(columns, 0);
-        table = new JTable(tableModel);
+        String[] columns = {"Номер счета", "Имя", "Фамилия", "Баланс", "Уровень", "Бонус"};
+        model = new DefaultTableModel(columns, 0);
+        table = new JTable(model);
+        refreshData(); // Загрузка из БД
+        add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Загружаем данные из БД при запуске
-        refreshTableData();
+        JPanel panel = new JPanel();
 
-        // Добавляем таблицу в панель с прокруткой
-        JScrollPane scrollPane = new JScrollPane(table);
-        add(scrollPane, BorderLayout.CENTER);
-
-
-        // --- 2. ПАНЕЛЬ КНОПОК (Низ) ---
-        JPanel buttonPanel = new JPanel();
-
+        JButton addBtn = new JButton("Новый клиент");
+        JButton transferBtn = new JButton("Перевод средств");
         JButton refreshBtn = new JButton("Обновить");
-        JButton transferBtn = new JButton("Перевести средства");
-        JButton addClientBtn = new JButton("Добавить клиента");
 
-        buttonPanel.add(refreshBtn);
-        buttonPanel.add(transferBtn);
-        buttonPanel.add(addClientBtn);
+        panel.add(addBtn);
+        panel.add(transferBtn);
+        panel.add(refreshBtn);
+        add(panel, BorderLayout.SOUTH);
 
-        add(buttonPanel, BorderLayout.SOUTH);
 
-        // --- 3. ЛОГИКА КНОПОК ---
-
-        // Кнопка ОБНОВИТЬ
-        refreshBtn.addActionListener(e -> refreshTableData());
-
-        // Кнопка ПЕРЕВЕСТИ (Транзакция из Задания 4)
-        transferBtn.addActionListener(e -> {
-            showTransferDialog();
-        });
-
-        // Кнопка ДОБАВИТЬ (просто заглушка, можно реализовать позже)
-        addClientBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Функцию добавления нужно реализовать (Create)");
-        });
+        refreshBtn.addActionListener(e -> refreshData());
+        addBtn.addActionListener(e -> showAddClientDialog());
+        transferBtn.addActionListener(e -> showTransferDialog());
     }
 
-    // Метод для загрузки данных из БД в таблицу
-    private void refreshTableData() {
-        // Очищаем таблицу
-        tableModel.setRowCount(0);
-
-        // Берем список из БД
-        List<Account> accounts = dbManager.getAllAccountsFromDB();
-
-        // Заполняем таблицу
-        for (Account acc : accounts) {
-            Object[] row = {
-                    acc.getAccount().getAccountNumber(),
-                    acc.getClient().getFirstName(),
-                    acc.getClient().getSecondName(),
-                    acc.getSum(),
-                    acc.getClient().getLevel()
-            };
-            tableModel.addRow(row);
+    private void refreshData() {
+        model.setRowCount(0); // Очистка
+        List<Account> accounts = db.getAllAccountsFromDB();
+        for (Account a : accounts) {
+            model.addRow(new Object[]{
+                    a.getAccount().getAccountNumber(),
+                    a.getClient().getFirstName(),
+                    a.getClient().getSecondName(),
+                    a.getSum(),
+                    a.getClient().getLevel(),
+                    a.haveBonus() ? "Да" : "Нет"
+            });
         }
     }
 
-    // Диалоговое окно для перевода денег
+    private void showAddClientDialog() {
+        JTextField nameField = new JTextField();
+        JTextField surnameField = new JTextField();
+        JComboBox<TypeLevel> levelBox = new JComboBox<>(TypeLevel.values());
+
+        Object[] message = {
+                "Имя:", nameField,
+                "Фамилия:", surnameField,
+                "Уровень:", levelBox
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Новый клиент", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                Client client = new Client(nameField.getText(), surnameField.getText(), (TypeLevel) levelBox.getSelectedItem());
+                Account account = new Account(client); // Создаем объект
+                db.saveAccountToDB(account);
+                refreshData();
+                JOptionPane.showMessageDialog(this, "Клиент добавлен!");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Ошибка: " + e.getMessage());
+            }
+        }
+    }
+
     private void showTransferDialog() {
-        // Создаем поля ввода
         JTextField fromField = new JTextField();
         JTextField toField = new JTextField();
         JTextField amountField = new JTextField();
+
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow != -1) {
+            fromField.setText(model.getValueAt(selectedRow, 0).toString());
+        }
 
         Object[] message = {
                 "Счет отправителя:", fromField,
@@ -95,25 +98,22 @@ public class BankWindow extends JFrame {
                 "Сумма:", amountField
         };
 
-        int option = JOptionPane.showConfirmDialog(this, message, "Перевод средств", JOptionPane.OK_CANCEL_OPTION);
-
+        int option = JOptionPane.showConfirmDialog(this, message, "Перевод", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             try {
                 String from = fromField.getText();
                 String to = toField.getText();
                 int amount = Integer.parseInt(amountField.getText());
 
-                // ВЫЗЫВАЕМ ВАШ МЕТОД ТРАНЗАКЦИИ
-                boolean success = dbManager.transferMoneyDB(from, to, amount);
-
+                boolean success = db.transferMoneyDB(from, to, amount);
                 if (success) {
-                    JOptionPane.showMessageDialog(this, "Успешно переведено!");
-                    refreshTableData(); // Обновляем таблицу, чтобы увидеть новый баланс
+                    refreshData();
+                    JOptionPane.showMessageDialog(this, "Перевод выполнен успешно!");
                 } else {
-                    JOptionPane.showMessageDialog(this, "Ошибка перевода (проверьте баланс или номера)", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Ошибка перевода (проверьте баланс)", "Ошибка", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Введите корректную сумму!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Введите корректное число!", "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
