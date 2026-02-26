@@ -15,14 +15,14 @@ public class Bank {
 
     public void addAccount(Account account) {
         if (inAccount(account)) return;
-        accounts.addLast(account);
+        accounts.add(account);
     }
 
     public void putMoney(Account acc, int _sum) {
         if (0 >= _sum) return;
         acc.sum(_sum);
         Operation operation = new Operation(TypeNameTransfer.ADDITION, _sum);
-        acc.getOperations().addLast(operation);
+        acc.getOperations().add(operation);
     }
 
     public void sendMoney(Account acc, int _sum) {
@@ -30,18 +30,18 @@ public class Bank {
         else {
             acc.minus(_sum);
             Operation operationPayment = new Operation(TypeNameTransfer.PAYMENT, _sum * -1);
-            acc.getOperations().addLast(operationPayment);
+            acc.getOperations().add(operationPayment);
         }
         if (acc.willCashBack(_sum)) {
             int cashBack = acc.calculationCashBack(_sum);
             acc.sum(cashBack);
             Operation operationCashBack = new Operation(TypeNameTransfer.CASH_BACK, cashBack);
-            acc.getOperations().addLast(operationCashBack);
+            acc.getOperations().add(operationCashBack);
         }
         if (!acc.haveBonus()) {
             acc.sum(1000);
             Operation operationWelcome = new Operation(TypeNameTransfer.WELCOME_BONUS, 1000);
-            acc.getOperations().addLast(operationWelcome);
+            acc.getOperations().add(operationWelcome);
         }
     }
 
@@ -53,10 +53,10 @@ public class Bank {
         else {
             cl1.minus(sum_);
             Operation operationSend = new Operation(TypeNameTransfer.SEND_TRANSFER, sum_, true, cl2.getAccount());
-            cl1.getOperations().addLast(operationSend);
+            cl1.getOperations().add(operationSend);
             cl2.sum(sum_);
             Operation operationAccept = new Operation(TypeNameTransfer.ACCEPT_TRANSFER, sum_, true, cl1.getAccount());
-            cl2.getOperations().addLast(operationAccept);
+            cl2.getOperations().add(operationAccept);
         }
     }
 

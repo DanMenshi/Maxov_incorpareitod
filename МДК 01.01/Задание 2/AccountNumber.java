@@ -22,7 +22,7 @@ public class AccountNumber {
         boolean condition = false;
 
         if (list.isEmpty()) {
-            list.addLast(sb.toString());
+            list.add(sb.toString());
             return sb.toString();
         } else {
             for (String el :  list) {
@@ -36,7 +36,7 @@ public class AccountNumber {
             return generateAccNumber(clientName);
         }
         else {
-            list.addLast(sb.toString());
+            list.add(sb.toString());
             return sb.toString();
         }
     }
